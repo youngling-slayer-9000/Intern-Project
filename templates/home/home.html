@@ -1,0 +1,292 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Attendance</title>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+
+    <!-- Flatpickr Core CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  
+
+</head>
+
+
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation Pane -->
+        <div class="sidebar">
+            <h2>Dashboard</h2>
+            <ul>
+                <li><a href="#" id="profile-link"><i class="fas fa-user"></i> My Profile</a></li>
+                <li><a href="#" id="search-link"><i class="fas fa-search"></i> Employee Search</a></li>
+                <li><a href="#"><i class="fas fa-calendar-check"></i> Attendance System</a></li>
+                <li><a href="#"><i class="fas fa-building"></i> Company Policy</a></li>
+            </ul>
+        </div>
+
+
+        <!-- Main Content (You'll update this later) -->
+        <div class="main-content">
+
+          <div id="main-section">
+
+            <!-- Flexbox 1: Short Description -->
+            <div class="section description">
+                <h2>Employee Attendance Overview</h2>
+                <p>This dashboard helps manage and track employee attendance based on various filters like name, date range, and location.</p>
+            </div>
+
+            <!-- Flexbox 2: Search Feature -->
+            <div class="section search-form">
+                <h3>Search Attendance Records</h3>
+                <form method="get" action="{% url 'homeSystem:home' %}">
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" name="name" value="{{ name }}">
+                    </div>
+                     <div class="form-group">
+                        <label>Branch:</label>
+                        <select name="branch" class="styled-select">
+                            <option value="">-- Select Branch --</option>
+                            {% for b in branches %}
+                                <option value="{{ b }}" {% if branch == b %}selected{% endif %}>{{ b }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date From:</label>
+                        <input type="date" name="date_from" value="{{ date_from }}">
+                    </div>
+
+                   
+
+                    
+                    <div class="form-group">
+                        <label>Date To:</label>
+                        <input type="date" name="date_to" value="{{ date_to }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Department:</label>
+                        <select name="department"  class="styled-select">
+                            <option value="">-- Select Department --</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept }}" {% if department == dept %}selected{% endif %}>{{ dept }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>Employee ID:</label>
+                        <input type="text" name="employee_id" value="{{ employee_id }}">
+                    </div>
+                   
+
+
+
+
+
+                    <div class="form-group">
+                        <label>First Punch:</label>
+                        <input type="text" name="first_punch" value="{{ first_punch }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Punch:</label>
+                        <input type="text" name="last_punch" value="{{ last_punch }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Time:</label>
+                        <input type="text" name="total_time" placeholder="HH or HH:MM or HH:MM:SS" value="{{ total_time }}">
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>Results per page:</label>
+                        <select name="results_per_page">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+
+
+                    <button type="submit">Search</button>
+                 
+
+                </form>
+
+            </div>
+
+            <!-- Flexbox 3: Placeholder for Query Display -->
+            <div class="section query-box">
+                {% if has_search and page_obj %}
+                    <p>
+                        Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ total_count }} result{{ total_count|pluralize }}.
+                    </p>
+                {% endif %}
+
+                {% if has_search %}
+                    <p><strong>Total Results:</strong> {{ total_count }}</p>
+                {% endif %}
+
+                <h3>Results</h3>        
+                    {% if has_search and records %}
+                        <form method="get" action="{% url 'homeSystem:home' %}" style="text-align: right; margin-bottom: 15px;">
+                            {% for key, value in request.GET.items %}
+                                {% if key != 'export' and key != 'page' %}
+                                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                                {% endif %}
+                            {% endfor %}
+                            <button type="submit" name="export" value="xlsx" class="export-btn">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </form>
+
+                    {% endif %}
+
+                
+                {% if has_search %}
+                    {% if records %}
+                           
+
+                        <table>
+                           <thead>
+                                <tr>
+                                    <th>Employee ID</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Branch</th>
+                                    <th>Date</th>
+                                    <th>First Punch</th>
+                                    <th>Last Punch</th>
+                                    <th>Total Time</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for record in records %}
+                                <tr>
+                                    <td data-label="Employee ID">{{ record.employee_id }}</td>
+                                    <td data-label="Name">{{ record.first_name }}</td>
+                                    <td data-label="Department">{{ record.department }}</td>
+                                    <td data-label="Branch">{{ record.branch }}</td>
+                                    <td data-label="Date">{{ record.date }}</td>
+                                    <td data-label="First Punch">{{ record.first_punch }}</td>
+                                    <td data-label="Last Punch">{{ record.last_punch }}</td>
+                                    <td data-label="Total Time">{{ record.total_time }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
+
+
+                           {% if page_obj.has_other_pages %}
+                                <div class="pagination">
+                                    {% if page_obj.has_previous %}
+                                        <a href="?name={{ name }}&date_from={{ date_from }}&date_to={{ date_to }}&department={{ department }}&branch={{ branch }}&employee_id={{ employee_id }}&first_punch={{ first_punch }}&last_punch={{ last_punch }}&total_time={{ total_time }}&results_per_page={{ results_per_page }}&page={{ page_obj.previous_page_number }}"> Previous </a>
+
+                                    {% endif %}
+
+                                    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                                    {% if page_obj.has_next %}
+                                        <a href="?name={{ name }}&date_from={{ date_from }}&date_to={{ date_to }}&department={{ department }}&branch={{ branch }}&employee_id={{ employee_id }}&first_punch={{ first_punch }}&last_punch={{ last_punch }}&total_time={{ total_time }}&results_per_page={{ results_per_page }}&page={{ page_obj.next_page_number }}">Next</a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+
+
+
+                    {% else %}
+                        <p>No results found. Try a different query.</p>
+                    {% endif %}
+                {% else %}
+                    <p>Enter query</p>
+                {% endif %}
+            </div>
+           </div>
+
+        </div> <!-- End of Main Content -->
+        <!-- ✅ Flexbox 4: Hidden Profile Section -->
+        <div class="section profile-section" id="profile-section" style="display: none;">
+            <h3>My Profile</h3>
+            <p>Name: {{ user.first_name }} {{ user.last_name }}</p>
+            <p>Email: {{ user.email }}</p>
+            <p>Department: {{ user.department }}</p>
+            <!-- Add more fields as needed -->
+        </div>
+
+    </div>
+</body>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const toggle = document.getElementById('weekdayToggle');
+    const optionsContainer = document.querySelector('.weekday-options');
+    const hiddenInput = document.getElementById('weekdayInput');
+    const options = document.querySelectorAll('.weekday-option');
+
+    toggle.addEventListener('click', () => {
+        optionsContainer.classList.toggle('open');
+    });
+
+    options.forEach(option => {
+        option.addEventListener('click', () => {
+            const value = option.getAttribute('data-value');
+
+            toggle.textContent = value === "" ? "None 🚫" : value;
+            hiddenInput.value = value;
+            optionsContainer.classList.remove('open');
+        });
+    });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const profileLink = document.getElementById("profile-link");
+    const searchLink = document.getElementById("search-link");
+    const profileSection = document.getElementById("profile-section");
+    const mainSection = document.getElementById("main-section");
+
+    // Show Profile View
+    profileLink.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        mainSection.style.display = "none";
+        profileSection.style.display = "block";
+        profileSection.style.opacity = 0;
+        profileSection.style.transition = "opacity 0.4s ease-in";
+        setTimeout(() => {
+            profileSection.style.opacity = 1;
+        }, 10);
+    });
+
+    // Restore Default Search View
+    searchLink.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        profileSection.style.transition = "opacity 0.3s ease-out";
+        profileSection.style.opacity = 0;
+        setTimeout(() => {
+            profileSection.style.display = "none";
+            mainSection.style.display = "block";
+        }, 300);
+    });
+});
+</script>
+
+
+
+</html>
